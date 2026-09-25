@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Tabela Periódica Completa</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e0e0e0; padding: 10px; color: black; }
+        .container { max-width: 1500px; margin: 0 auto; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+        h1 { text-align: center; margin: 0 0 10px 0; }
+        
+        table { border-collapse: separate; border-spacing: 2px; margin: 0 auto; }
+        td { 
+            border: 1px solid rgba(0,0,0,0.2); 
+            width: 45px; height: 45px; 
+            text-align: center; cursor: pointer; 
+            font-size: 10px; position: relative;
+            transition: transform 0.1s;
+        }
+        td:hover { transform: scale(1.15); z-index: 10; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        td .atomic-number { position: absolute; top: 1px; left: 2px; font-size: 7px; font-weight: bold; }
+        td .symbol { font-size: 15px; font-weight: bold; margin-top: 6px; }
+        td .mass { position: absolute; bottom: 1px; left: 0; right: 0; font-size: 7px; }
+        
+        .vazio { border: none; cursor: default; }
+        
+        /* Cores baseadas na imagem */
+        .naometais { background-color: #a8d08d; }
+        .alcalinos { background-color: #ffe699; }
+        .alcalinoterrosos { background-color: #ffd966; }
+        .semimetais { background-color: #a9d18e; }
+        .outrosmetais { background-color: #9dc3e6; }
+        .halogenios { background-color: #92d050; }
+        .gasesnobres { background-color: #5b9bd5; }
+        .lantanideos { background-color: #8ed2c5; }
+        .actinideos { background-color: #d9d9d9; }
+        .transicao { background-color: #f4b084; }
+
+        #info-box {
+            margin-top: 15px; padding: 10px;
+            border: 2px solid #333; border-radius: 5px;
+            background: #fff3cd; display: none;
+            width: 250px; margin: 15px auto; text-align: center;
+        }
+        .btn-voltar { 
+            display: inline-block; margin-top: 10px; padding: 8px 15px;
+            background: #e74c3c; color: white; text-decoration: none; 
+            border-radius: 5px; font-weight: bold;
+        }
+    
+        /* =========================================================
+           MÓDULO DE MELHORIAS — não substitui o código original
+           ========================================================= */
+        .estrutura-tabela {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .rotulo-periodos {
+            width: 42px;
+            flex: 0 0 42px;
+            display: grid;
+            grid-template-rows: 31px repeat(7, 49px);
+            gap: 2px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .rotulo-periodos .titulo-eixo,
+        .rotulo-periodos .periodo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+        }
+
+        .rotulo-periodos .titulo-eixo {
+            color: #555;
+            font-size: 9px;
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+        }
+
+        .rotulo-periodos .periodo {
+            background: #f1f1f1;
+            border: 1px solid #d0d0d0;
+        }
+
+        .area-tabela {
+            overflow-x: auto;
+            padding: 2px;
+        }
+
+        .cabecalho-grupos {
+            display: grid;
+            grid-template-columns: repeat(18, 45px);
+            gap: 2px;
+            width: max-content;
+            margin: 0 auto 3px;
+            text-align: center;
+        }
+
+        .grupo {
+            height: 28px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 9px;
+            line-height: 1.05;
+            border-radius: 4px;
+            background: #f1f1f1;
+            border: 1px solid #d0d0d0;
+        }
+
+        .grupo span:last-child {
+            color: #666;
+            font-size: 8px;
+            font-weight: 500;
+        }
+
+        .faixa-legendas {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(280px, 1fr));
+            gap: 12px;
+            margin: 18px auto 0;
+            max-width: 1150px;
+        }
+
+        .legenda-box {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 12px;
+            background: #fafafa;
+        }
+
+        .legenda-box h3 {
+            margin: 0 0 10px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .legenda-itens {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px 12px;
+            justify-content: center;
+        }
+
+        .legenda-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        .amostra-cor {
+            width: 16px;
+            height: 16px;
+            border: 1px solid rgba(0,0,0,.25);
+            border-radius: 3px;
+            display: inline-block;
+        }
+
+        .estado-amostra {
+            width: 16px;
+            height: 16px;
+            border: 1px solid #777;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+        }
+
+        .estado-solido { background: #666; }
+        .estado-liquido { background: #fff; border: 2px solid #666; }
+        .estado-gasoso { background: #fff; border: 2px dashed #666; }
+        .estado-desconhecido { background: repeating-linear-gradient(45deg,#eee,#eee 3px,#bbb 3px,#bbb 5px); }
+
+        .faixa-series {
+            margin: 12px auto 0;
+            max-width: 1150px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .serie {
+            padding: 9px 12px;
+            border-radius: 7px;
+            border: 1px solid #ccc;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .serie.lan { background: #8ed2c5; }
+        .serie.act { background: #d9d9d9; }
+
+        .info-extra {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #ddd;
+            font-size: 13px;
+        }
+
+        .info-extra strong {
+            color: #555;
+        }
+
+        @media (max-width: 800px) {
+            .container { padding: 8px; }
+            .faixa-legendas,
+            .faixa-series {
+                grid-template-columns: 1fr;
+            }
+
+            .rotulo-periodos {
+                width: 28px;
+                flex-basis: 28px;
+            }
+
+            .rotulo-periodos .titulo-eixo {
+                font-size: 7px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tabela Periódica</h1>
+
+        <!-- =======================================================
+             MÓDULO DE ESTRUTURA: grupos e períodos
+             A tabela original abaixo permanece preservada.
+             ======================================================= -->
+        <div class="estrutura-tabela">
+            <div class="rotulo-periodos" aria-label="Períodos da tabela periódica">
+                <div class="titulo-eixo">PERÍODOS</div>
+                <div class="periodo">1</div>
+                <div class="periodo">2</div>
+                <div class="periodo">3</div>
+                <div class="periodo">4</div>
+                <div class="periodo">5</div>
+                <div class="periodo">6</div>
+                <div class="periodo">7</div>
+            </div>
+
+            <div class="area-tabela">
+                <div class="cabecalho-grupos" aria-label="Grupos ou famílias">
+                    <div class="grupo">1<span>1A</span></div>
+                    <div class="grupo">2<span>2A</span></div>
+                    <div class="grupo">3<span>3B</span></div>
+                    <div class="grupo">4<span>4B</span></div>
+                    <div class="grupo">5<span>5B</span></div>
+                    <div class="grupo">6<span>6B</span></div>
+                    <div class="grupo">7<span>7B</span></div>
+                    <div class="grupo">8<span>8B</span></div>
+                    <div class="grupo">9<span>8B</span></div>
+                    <div class="grupo">10<span>8B</span></div>
+                    <div class="grupo">11<span>1B</span></div>
+                    <div class="grupo">12<span>2B</span></div>
+                    <div class="grupo">13<span>3A</span></div>
+                    <div class="grupo">14<span>4A</span></div>
+                    <div class="grupo">15<span>5A</span></div>
+                    <div class="grupo">16<span>6A</span></div>
+                    <div class="grupo">17<span>7A</span></div>
+                    <div class="grupo">18<span>8A</span></div>
+                </div>
+        <table id="tabela-periodica">
+            <tr>
+                <td class="naometais" onclick="mostrarInfo('Hidrogênio', 'H', '1', '1.008', 'Não Metais')"><span class="atomic-number">1</span><div class="symbol">H</div><span class="mass">1.008</span></td>
+                <td colspan="16" class="vazio"></td>
+                <td class="gasesnobres" onclick="mostrarInfo('Hélio', 'He', '2', '4.003', 'Gases Nobres')"><span class="atomic-number">2</span><div class="symbol">He</div><span class="mass">4.003</span></td>
+            </tr>
+            <tr>
+                <td class="alcalinos" onclick="mostrarInfo('Lítio', 'Li', '3', '6.94', 'Metais Alcalinos')"><span class="atomic-number">3</span><div class="symbol">Li</div><span class="mass">6.94</span></td>
+                <td class="alcalinoterrosos" onclick="mostrarInfo('Berílio', 'Be', '4', '9.012', 'Alcalino-terrosos')"><span class="atomic-number">4</span><div class="symbol">Be</div><span class="mass">9.012</span></td>
+                <td colspan="10" class="vazio"></td>
+                <td class="semimetais" onclick="mostrarInfo('Boro', 'B', '5', '10.81', 'Semimetais')"><span class="atomic-number">5</span><div class="symbol">B</div><span class="mass">10.81</span></td>
+                <td class="naometais" onclick="mostrarInfo('Carbono', 'C', '6', '12.01', 'Não Metais')"><span class="atomic-number">6</span><div class="symbol">C</div><span class="mass">12.01</span></td>
+                <td class="naometais" onclick="mostrarInfo('Nitrogênio', 'N', '7', '14.007', 'Não Metais')"><span class="atomic-number">7</span><div class="symbol">N</div><span class="mass">14.007</span></td>
+                <td class="naometais" onclick="mostrarInfo('Oxigênio', 'O', '8', '15.999', 'Não Metais')"><span class="atomic-number">8</span><div class="symbol">O</div><span class="mass">15.999</span></td>
+                <td class="halogenios" onclick="mostrarInfo('Flúor', 'F', '9', '18.998', 'Halogênios')"><span class="atomic-number">9</span><div class="symbol">F</div><span class="mass">18.998</span></td>
+                <td class="gasesnobres" onclick="mostrarInfo('Neônio', 'Ne', '10', '20.180', 'Gases Nobres')"><span class="atomic-number">10</span><div class="symbol">Ne</div><span class="mass">20.18</span></td>
+            </tr>
+            <tr>
+                <td class="alcalinos" onclick="mostrarInfo('Sódio', 'Na', '11', '22.99', 'Metais Alcalinos')"><span class="atomic-number">11</span><div class="symbol">Na</div><span class="mass">22.99</span></td>
+                <td class="alcalinoterrosos" onclick="mostrarInfo('Magnésio', 'Mg', '12', '24.305', 'Alcalino-terrosos')"><span class="atomic-number">12</span><div class="symbol">Mg</div><span class="mass">24.305</span></td>
+                <td colspan="10" class="vazio"></td>
+                <td class="outrosmetais" onclick="mostrarInfo('Alumínio', 'Al', '13', '26.982', 'Outros Metais')"><span class="atomic-number">13</span><div class="symbol">Al</div><span class="mass">26.982</span></td>
+                <td class="semimetais" onclick="mostrarInfo('Silício', 'Si', '14', '28.085', 'Semimetais')"><span class="atomic-number">14</span><div class="symbol">Si</div><span class="mass">28.085</span></td>
+                <td class="naometais" onclick="mostrarInfo('Fósforo', 'P', '15', '30.974', 'Não Metais')"><span class="atomic-number">15</span><div class="symbol">P</div><span class="mass">30.974</span></td>
+                <td class="naometais" onclick="mostrarInfo('Enxofre', 'S', '16', '32.06', 'Não Metais')"><span class="atomic-number">16</span><div class="symbol">S</div><span class="mass">32.06</span></td>
+                <td class="halogenios" onclick="mostrarInfo('Cloro', 'Cl', '17', '35.45', 'Halogênios')"><span class="atomic-number">17</span><div class="symbol">Cl</div><span class="mass">35.45</span></td>
+                <td class="gasesnobres" onclick="mostrarInfo('Argônio', 'Ar', '18', '39.948', 'Gases Nobres')"><span class="atomic-number">18</span><div class="symbol">Ar</div><span class="mass">39.948</span></td>
+            </tr>
+            <tr>
+                <td class="alcalinos" onclick="mostrarInfo('Potássio', 'K', '19', '39.098', 'Metais Alcalinos')"><span class="atomic-number">19</span><div class="symbol">K</div><span class="mass">39.098</span></td>
+                <td class="alcalinoterrosos" onclick="mostrarInfo('Cálcio', 'Ca', '20', '40.078', 'Alcalino-terrosos')"><span class="atomic-number">20</span><div class="symbol">Ca</div><span class="mass">40.078</span></td>
+                <td class="transicao" onclick="mostrarInfo('Escândio', 'Sc', '21', '44.956', 'Metais de Transição')"><span class="atomic-number">21</span><div class="symbol">Sc</div><span class="mass">44.956</span></td>
+                <td class="transicao" onclick="mostrarInfo('Titânio', 'Ti', '22', '47.867', 'Metais de Transição')"><span class="atomic-number">22</span><div class="symbol">Ti</div><span class="mass">47.867</span></td>
+                <td class="transicao" onclick="mostrarInfo('Vanádio', 'V', '23', '50.942', 'Metais de Transição')"><span class="atomic-number">23</span><div class="symbol">V</div><span class="mass">50.942</span></td>
+                <td class="transicao" onclick="mostrarInfo('Crômio', 'Cr', '24', '51.996', 'Metais de Transição')"><span class="atomic-number">24</span><div class="symbol">Cr</div><span class="mass">51.996</span></td>
+                <td class="transicao" onclick="mostrarInfo('Manganês', 'Mn', '25', '54.938', 'Metais de Transição')"><span class="atomic-number">25</span><div class="symbol">Mn</div><span class="mass">54.938</span></td>
+                <td class="transicao" onclick="mostrarInfo('Ferro', 'Fe', '26', '55.845', 'Metais de Transição')"><span class="atomic-number">26</span><div class="symbol">Fe</div><span class="mass">55.845</span></td>
+                <td class="transicao" onclick="mostrarInfo('Cobalto', 'Co', '27', '58.933', 'Metais de Transição')"><span class="atomic-number">27</span><div class="symbol">Co</div><span class="mass">58.933</span></td>
+                <td class="transicao" onclick="mostrarInfo('Níquel', 'Ni', '28', '58.693', 'Metais de Transição')"><span class="atomic-number">28</span><div class="symbol">Ni</div><span class="mass">58.693</span></td>
+                <td class="transicao" onclick="mostrarInfo('Cobre', 'Cu', '29', '63.546', 'Metais de Transição')"><span class="atomic-number">29</span><div class="symbol">Cu</div><span class="mass">63.546</span></td>
+                <td class="transicao" onclick="mostrarInfo('Zinco', 'Zn', '30', '65.38', 'Metais de Transição')"><span class="atomic-number">30</span><div class="symbol">Zn</div><span class="mass">65.38</span></td>
+                <td class="outrosmetais" onclick="mostrarInfo('Gálio', 'Ga', '31', '69.723', 'Outros Metais')"><span class="atomic-number">31</span><div class="symbol">Ga</div><span class="mass">69.723</span></td>
+                <td class="semimetais" onclick="mostrarInfo('Germânio', 'Ge', '32', '72.630', 'Semimetais')"><span class="atomic-number">32</span><div class="symbol">Ge</div><span class="mass">72.63</span></td>
+                <td class="semimetais" onclick="mostrarInfo('Arsênio', 'As', '33', '74.922', 'Semimetais')"><span class="atomic-number">33</span><div class="symbol">As</div><span class="mass">74.922</span></td>
+                <td class="naometais" onclick="mostrarInfo('Selênio', 'Se', '34', '78.971', 'Não Metais')"><span class="atomic-number">34</span><div class="symbol">Se</div><span class="mass">78.971</span></td>
+                <td class="halogenios" onclick="mostrarInfo('Bromo', 'Br', '35', '79.904', 'Halogênios')"><span class="atomic-number">35</span><div class="symbol">Br</div><span class="mass">79.904</span></td>
+                <td class="gasesnobres" onclick="mostrarInfo('Criptônio', 'Kr', '36', '83.798', 'Gases Nobres')"><span class="atomic-number">36</span><div class="symbol">Kr</div><span class="mass">83.798</span></td>
+            </tr>
+            <tr>
+                <td class="alcalinos" onclick="mostrarInfo('Rubídio', 'Rb', '37', '85.468', 'Metais Alcalinos')"><span class="atomic-number">37</span><div class="symbol">Rb</div><span class="mass">85.468</span></td>
+                <td class="alcalinoterrosos" onclick="mostrarInfo('Estrôncio', 'Sr', '38', '87.62', 'Alcalino-terrosos')"><span class="atomic-number">38</span><div class="symbol">Sr</div><span class="mass">87.62</span></td>
+                <td class="transicao" onclick="mostrarInfo('Ítrio', 'Y', '39', '88.906', 'Metais de Transição')"><span class="atomic-number">39</span><div class="symbol">Y</div><span class="mass">88.906</span></td>
+                <td class="transicao" onclick="mostrarInfo('Zircônio', 'Zr', '40', '91.224', 'Metais de Transição')"><span class="atomic-number">40</span><div class="symbol">Zr</div><span class="mass">91.224</span></td>
+                <td class="transicao" onclick="mostrarInfo('Nióbio', 'Nb', '41', '92.906', 'Metais de Transição')"><span class="atomic-number">41</span><div class="symbol">Nb</div><span class="mass">92.906</span></td>
+                <td class="transicao" onclick="mostrarInfo('Molibdênio', 'Mo', '42', '95.95', 'Metais de Transição')"><span class="atomic-number">42</span><div class="symbol">Mo</div><span class="mass">95.95</span></td>
+                <td class="transicao" onclick="mostrarInfo('Tecnécio', 'Tc', '43', '98', 'Metais de Transição')"><span class="atomic-number">43</span><div class="symbol">Tc</div><span class="mass">98</span></td>
+                <td class="transicao" onclick="mostrarInfo('Rutênio', 'Ru', '44', '101.07', 'Metais de Transição')"><span class="atomic-number">44</span><div class="symbol">Ru</div><span class="mass">101.07</span></td>
+                <td class="transicao" onclick="mostrarInfo('Ródio', 'Rh', '45', '102.91', 'Metais de Transição')"><span class="atomic-number">45</span><div class="symbol">Rh</div><span class="mass">102.91</span></td>
+                <td class="transicao" onclick="mostrarInfo('Paládio', 'Pd', '46', '106.42', 'Metais de Transição')"><span class="atomic-number">46</span><div class="symbol">Pd</div><span class="mass">106.42</span></td>
+                <td class="transicao" onclick="mostrarInfo('Prata', 'Ag', '47', '107.87', 'Metais de Transição')"><span class="atomic-number">47</span><div class="symbol">Ag</div><span class="mass">107.87</span></td>
+                <td class="transicao" onclick="mostrarInfo('Cádmio', 'Cd', '48', '112.41', 'Metais de Transição')"><span class="atomic-number">48</span><div class="symbol">Cd</div><span class="mass">112.41</span></td>
+                <td class="outrosmetais" onclick="mostrarInfo('Índio', 'In', '49', '114.82', 'Outros Metais')"><span class="atomic-number">49</span><div class="symbol">In</div><span class="mass">114.82</span></td>
+                <td class="outrosmetais" onclick="mostrarInfo('Estanho', 'Sn', '50', '118.71', 'Outros Metais')"><span class="atomic-number">50</span><div class="symbol">Sn</div><span class="mass">118.71</span></td>
+                <td class="semimetais" onclick="mostrarInfo('Antimônio', 'Sb', '51', '121.76', 'Semimetais')"><span class="atomic-number">51</span><div class="symbol">Sb</div><span class="mass">121.76</span></td>
+                <td class="semimetais" onclick="mostrarInfo('Telúrio', 'Te', '52', '127.60', 'Semimetais')"><span class="atomic-number">52</span><div class="symbol">Te</div><span class="mass">127.6</span></td>
+                <td class="halogenios" onclick="mostrarInfo('Iodo', 'I', '53', '126.90', 'Halogênios')"><span class="atomic-number">53</span><div class="symbol">I</div><span class="mass">126.90</span></td>
+                <td class="gasesnobres" onclick="mostrarInfo('Xenônio', 'Xe', '54', '131.29', 'Gases Nobres')"><span class="atomic-number">54</span><div class="symbol">Xe</div><span class="mass">131.29</span></td>
+            </tr>
+            <tr>
+                <td class="alcalinos" onclick="mostrarInfo('Césio', 'Cs', '55', '132.91', 'Metais Alcalinos')"><span class="atomic-number">55</span><div class="symbol">Cs</div><span class="mass">132.91</span></td>
+                <td class="alcalinoterrosos" onclick="mostrarInfo('Bário', 'Ba', '56', '137.33', 'Alcalino-terrosos')"><span class="atomic-number">56</span><div class="symbol">Ba</div><span class="mass">137.33</span></td>
+                <td class="lantanideos" onclick="mostrarInfo('Lantanídeos', '57-71', '', '', 'Lantanídeos')"><span class="atomic-number">57-71</span><div class="symbol">*</div></td>
+                <td class="transicao" onclick="mostrarInfo('Háfnio', 'Hf', '72', '178.49', 'Metais de Transição')"><span class="atomic-number">72</span><div class="symbol">Hf</div><span class="mass">178.49</span></td>
+                <td class="transicao" onclick="mostrarInfo('Tântalo', 'Ta', '73', '180.95', 'Metais de Transição')"><span class="atomic-number">73</span><div class="symbol">Ta</div><span class="mass">180.95</span></td>
+                <td class="transicao" onclick="mostrarInfo('Tungstênio', 'W', '74', '183.84', 'Metais de Transição')"><span class="atomic-number">74</span><div class="symbol">W</div><span class="mass">183.84</span></td>
+                <td class="transicao" onclick="mostrarInfo('Rênio', 'Re', '75', '186.21', 'Metais de Transição')"><span class="atomic-number">75</span><div class="symbol">Re</div><span class="mass">186.21</span></td>
+                <td class="transicao" onclick="mostrarInfo('Ósmio', 'Os', '76', '190.23', 'Metais de Transição')"><span class="atomic-number">76</span><div class="symbol">Os</div><span class="mass">190.23</span></td>
+                <td class="transicao" onclick="mostrarInfo('Irídio', 'Ir', '77', '192.22', 'Metais de Transição')"><span class="atomic-number">77</span><div class="symbol">Ir</div><span class="mass">192.22</span></td>
+                <td class="transicao" onclick="mostrarInfo('Platina', 'Pt', '78', '195.08', 'Metais de Transição')"><span class="atomic-number">78</span><div class="symbol">Pt</div><span class="mass">195.08</span></td>
+                <td class="transicao" onclick="mostrarInfo('Ouro', 'Au', '79', '196.97', 'Metais de Transição')"><span class="atomic-number">79</span><div class="symbol">Au</div><span class="mass">196.97</span></td>
+                <td class="transicao" onclick="mostrarInfo('Mercúrio', 'Hg', '80', '200.59', 'Metais de Transição')"><span class="atomic-number">80</span><div class="symbol">Hg</div><span class="mass">200.59</span></td>
+                <td class="outrosmetais" onclick="mostrarInfo('Tálio', 'Tl', '81', '204.38', 'Outros Metais')"><span class="atomic-number">81</span><div class="symbol">Tl</div><span class="mass">204.38</span></td>
+                <td class="outrosmetais" onclick="mostrarInfo('Chumbo', 'Pb', '82', '207.2', 'Outros Metais')"><span class="atomic-number">82</span><div class="symbol">Pb</div><span class="mass">207.2</span></td>
+                <td class="outrosmetais" onclick="mostrarInfo('Bismuto', 'Bi', '83', '208.98', 'Outros Metais')"><span class="atomic-number">83</span><div class="symbol">Bi</div><span class="mass">208.98</span></td>
+                <td class="semimetais" onclick="mostrarInfo('Polônio', 'Po', '84', '209', 'Semimetais')"><span class="atomic-number">84</span><div class="symbol">Po</div><span class="mass">209</span></td>
+                <td class="halogenios" onclick="mostrarInfo('Astato', 'At', '85', '210', 'Halogênios')"><span class="atomic-number">85</span><div class="symbol">At</div><span class="mass">210</span></td>
+                <td class="gasesnobres" onclick="mostrarInfo('Radônio', 'Rn', '86', '222', 'Gases Nobres')"><span class="atomic-number">86</span><div class="symbol">Rn</div><span class="mass">222</span></td>
+            </tr>
+            <tr>
+                <td class="alcalinos" onclick="mostrarInfo('Frâncio', 'Fr', '87', '223', 'Metais Alcalinos')"><span class="atomic-number">87</span><div class="symbol">Fr</div><span class="mass">223</span></td>
+                <td class="alcalinoterrosos" onclick="mostrarInfo('Rádio', 'Ra', '88', '226', 'Alcalino-terrosos')"><span class="atomic-number">88</span><div class="symbol">Ra</div><span class="mass">226</span></td>
+                <td class="actinideos" onclick="mostrarInfo('Actinídeos', '89-103', '', '', 'Actinídeos')"><span class="atomic-number">89-103</span><div class="symbol">**</div></td>
+                <td class="transicao" onclick="mostrarInfo('Rutherfórdio', 'Rf', '104', '267', 'Metais de Transição')"><span class="atomic-number">104</span><div class="symbol">Rf</div><span class="mass">267</span></td>
+                <td class="transicao" onclick="mostrarInfo('Dúbnio', 'Db', '105', '268', 'Metais de Transição')"><span class="atomic-number">105</span><div class="symbol">Db</div><span class="mass">268</span></td>
+                <td class="transicao" onclick="mostrarInfo('Seabórgio', 'Sg', '106', '269', 'Metais de Transição')"><span class="atomic-number">106</span><div class="symbol">Sg</div><span class="mass">269</span></td>
+                <td class="transicao" onclick="mostrarInfo('Bóhrio', 'Bh', '107', '270', 'Metais de Transição')"><span class="atomic-number">107</span><div class="symbol">Bh</div><span class="mass">270</span></td>
+                <td class="transicao" onclick="mostrarInfo('Hássio', 'Hs', '108', '277', 'Metais de Transição')"><span class="atomic-number">108</span><div class="symbol">Hs</div><span class="mass">277</span></td>
+                <td class="transicao" onclick="mostrarInfo('Meitnério', 'Mt', '109', '278', 'Metais de Transição')"><span class="atomic-number">109</span><div class="symbol">Mt</div><span class="mass">278</span></td>
+                <td class="transicao" onclick="mostrarInfo('Darmstádio', 'Ds', '110', '281', 'Metais de Transição')"><span class="atomic-number">110</span><div class="symbol">Ds</div><span class="mass">281</span></td>
+                <td class="transicao" onclick="mostrarInfo('Roentgênio', 'Rg', '111', '281', 'Metais de Transição')"><span class="atomic-number">111</span><div class="symbol">Rg</div><span class="mass">281</span></td>
+                <td class="transicao" onclick="mostrarInfo('Copernício', 'Cn', '112', '285', 'Metais de Transição')"><span class="atomic-number">112</span><div class="symbol">Cn</div><span class="mass">285</span></td>
+                <td class="outrosmetais" onclick="mostrarInfo('Nihônio', 'Nh', '113', '286', 'Outros Metais')"><span class="atomic-number">113</span><div class="symbol">Nh</div><span class="mass">286</span></td>
+                <td class="outrosmetais" onclick="mostrarInfo('Fleróvio', 'Fl', '114', '289', 'Outros Metais')"><span class="atomic-number">114</span><div class="symbol">Fl</div><span class="mass">289</span></td>
+                <td class="outrosmetais" onclick="mostrarInfo('Moscóvio', 'Mc', '115', '288', 'Outros Metais')"><span class="atomic-number">115</span><div class="symbol">Mc</div><span class="mass">288</span></td>
+                <td class="outrosmetais" onclick="mostrarInfo('Livermório', 'Lv', '116', '293', 'Outros Metais')"><span class="atomic-number">116</span><div class="symbol">Lv</div><span class="mass">293</span></td>
+                <td class="halogenios" onclick="mostrarInfo('Tenessino', 'Ts', '117', '294', 'Halogênios')"><span class="atomic-number">117</span><div class="symbol">Ts</div><span class="mass">294</span></td>
+                <td class="gasesnobres" onclick="mostrarInfo('Oganessônio', 'Og', '118', '294', 'Gases Nobres')"><span class="atomic-number">118</span><div class="symbol">Og</div><span class="mass">294</span></td>
+            </tr>
+            
+            <tr class="vazio"><td colspan="18"></td></tr> <tr>
+                <td colspan="2" class="vazio"></td>
+                <td class="lantanideos" onclick="mostrarInfo('Lantânio', 'La', '57', '138.91', 'Lantanídeos')"><span class="atomic-number">57</span><div class="symbol">La</div><span class="mass">138.91</span></td>
+                <td class="lantanideos" onclick="mostrarInfo('Cério', 'Ce', '58', '140.12', 'Lantanídeos')"><span class="atomic-number">58</span><div class="symbol">Ce</div><span class="mass">140.12</span></td>
+                <td class="lantanideos" onclick="mostrarInfo('Praseodímio', 'Pr', '59', '140.91', 'Lantanídeos')"><span class="atomic-number">59</span><div class="symbol">Pr</div><span class="mass">140.91</span></td>
+                <td class="lantanideos" onclick="mostrarInfo('Neodímio', 'Nd', '60', '144.24', 'Lantanídeos')"><span class="atomic-number">60</span><div class="symbol">Nd</div><span class="mass">144.24</span></td>
+                <td class="lantanideos" onclick="mostrarInfo('Promécio', 'Pm', '61', '145', 'Lantanídeos')"><span class="atomic-number">61</span><div class="symbol">Pm</div><span class="mass">145</span></td>
+                <td class="lantanideos" onclick="mostrarInfo('Samário', 'Sm', '62', '150.36', 'Lantanídeos')"><span class="atomic-number">62</span><div class="symbol">Sm</div><span class="mass">150.36</span></td>
+                <td class="lantanideos" onclick="mostrarInfo('Európio', 'Eu', '63', '151.96', 'Lantanídeos')"><span class="atomic-number">63</span><div class="symbol">Eu</div><span class="mass">151.96</span></td>
+                <td class="lantanideos" onclick="mostrarInfo('Gadolínio', 'Gd', '64', '157.25', 'Lantanídeos')"><span class="atomic-number">64</span><div class="symbol">Gd</div><span class="mass">157.25</span></td>
+                <td class="lantanideos" onclick="mostrarInfo('Térbio', 'Tb', '65', '158.93', 'Lantanídeos')"><span class="atomic-number">65</span><div class="symbol">Tb</div><span class="mass">158.93</span></td>
+                <td class="lantanideos" onclick="mostrarInfo('Disprósio', 'Dy', '66', '162.50', 'Lantanídeos')"><span class="atomic-number">66</span><div class="symbol">Dy</div><span class="mass">162.50</span></td>
+                <td class="lantanideos" onclick="mostrarInfo('Hólmio', 'Ho', '67', '164.93', 'Lantanídeos')"><span class="atomic-number">67</span><div class="symbol">Ho</div><span class="mass">164.93</span></td>
+                <td class="lantanideos" onclick="mostrarInfo('Érbio', 'Er', '68', '167.26', 'Lantanídeos')"><span class="atomic-number">68</span><div class="symbol">Er</div><span class="mass">167.26</span></td>
+                <td class="lantanideos" onclick="mostrarInfo('Túlio', 'Tm', '69', '168.93', 'Lantanídeos')"><span class="atomic-number">69</span><div class="symbol">Tm</div><span class="mass">168.93</span></td>
+                <td class="lantanideos" onclick="mostrarInfo('Itérbio', 'Yb', '70', '173.05', 'Lantanídeos')"><span class="atomic-number">70</span><div class="symbol">Yb</div><span class="mass">173.05</span></td>
+                <td class="lantanideos" onclick="mostrarInfo('Lutécio', 'Lu', '71', '174.97', 'Lantanídeos')"><span class="atomic-number">71</span><div class="symbol">Lu</div><span class="mass">174.97</span></td>
+                <td class="vazio"></td>
+            </tr>
+            <tr>
+                <td colspan="2" class="vazio"></td>
+                <td class="actinideos" onclick="mostrarInfo('Actínio', 'Ac', '89', '227', 'Actinídeos')"><span class="atomic-number">89</span><div class="symbol">Ac</div><span class="mass">227</span></td>
+                <td class="actinideos" onclick="mostrarInfo('Tório', 'Th', '90', '232.04', 'Actinídeos')"><span class="atomic-number">90</span><div class="symbol">Th</div><span class="mass">232.04</span></td>
+                <td class="actinideos" onclick="mostrarInfo('Protactínio', 'Pa', '91', '231.04', 'Actinídeos')"><span class="atomic-number">91</span><div class="symbol">Pa</div><span class="mass">231.04</span></td>
+                <td class="actinideos" onclick="mostrarInfo('Urânio', 'U', '92', '238.03', 'Actinídeos')"><span class="atomic-number">92</span><div class="symbol">U</div><span class="mass">238.03</span></td>
+                <td class="actinideos" onclick="mostrarInfo('Netúnio', 'Np', '93', '237', 'Actinídeos')"><span class="atomic-number">93</span><div class="symbol">Np</div><span class="mass">237</span></td>
+                <td class="actinideos" onclick="mostrarInfo('Plutônio', 'Pu', '94', '244', 'Actinídeos')"><span class="atomic-number">94</span><div class="symbol">Pu</div><span class="mass">244</span></td>
+                <td class="actinideos" onclick="mostrarInfo('Amerício', 'Am', '95', '243', 'Actinídeos')"><span class="atomic-number">95</span><div class="symbol">Am</div><span class="mass">243</span></td>
+                <td class="actinideos" onclick="mostrarInfo('Cúrio', 'Cm', '96', '247', 'Actinídeos')"><span class="atomic-number">96</span><div class="symbol">Cm</div><span class="mass">247</span></td>
+                <td class="actinideos" onclick="mostrarInfo('Berquélio', 'Bk', '97', '247', 'Actinídeos')"><span class="atomic-number">97</span><div class="symbol">Bk</div><span class="mass">247</span></td>
+                <td class="actinideos" onclick="mostrarInfo('Califórnio', 'Cf', '98', '251', 'Actinídeos')"><span class="atomic-number">98</span><div class="symbol">Cf</div><span class="mass">251</span></td>
+                <td class="actinideos" onclick="mostrarInfo('Einstênio', 'Es', '99', '252', 'Actinídeos')"><span class="atomic-number">99</span><div class="symbol">Es</div><span class="mass">252</span></td>
+                <td class="actinideos" onclick="mostrarInfo('Férmio', 'Fm', '100', '257', 'Actinídeos')"><span class="atomic-number">100</span><div class="symbol">Fm</div><span class="mass">257</span></td>
+                <td class="actinideos" onclick="mostrarInfo('Mendelévio', 'Md', '101', '258', 'Actinídeos')"><span class="atomic-number">101</span><div class="symbol">Md</div><span class="mass">258</span></td>
+                <td class="actinideos" onclick="mostrarInfo('Nobélio', 'No', '102', '259', 'Actinídeos')"><span class="atomic-number">102</span><div class="symbol">No</div><span class="mass">259</span></td>
+                <td class="actinideos" onclick="mostrarInfo('Laurêncio', 'Lr', '103', '262', 'Actinídeos')"><span class="atomic-number">103</span><div class="symbol">Lr</div><span class="mass">262</span></td>
+                <td class="vazio"></td>
+            </tr>
+        </table>
+        </div>
+        </div>
+
+        <!-- =======================================================
+             MÓDULO DE LEGENDAS
+             ======================================================= -->
+        <div class="faixa-legendas">
+            <section class="legenda-box">
+                <h3>Classificação dos elementos</h3>
+                <div class="legenda-itens">
+                    <div class="legenda-item"><span class="amostra-cor alcalinos"></span>Metais alcalinos</div>
+                    <div class="legenda-item"><span class="amostra-cor alcalinoterrosos"></span>Metais alcalino-terrosos</div>
+                    <div class="legenda-item"><span class="amostra-cor outrosmetais"></span>Metais representativos</div>
+                    <div class="legenda-item"><span class="amostra-cor semimetais"></span>Semimetais</div>
+                    <div class="legenda-item"><span class="amostra-cor naometais"></span>Não metais</div>
+                    <div class="legenda-item"><span class="amostra-cor halogenios"></span>Halogênios</div>
+                    <div class="legenda-item"><span class="amostra-cor gasesnobres"></span>Gases nobres</div>
+                    <div class="legenda-item"><span class="amostra-cor transicao"></span>Metais de transição</div>
+                    <div class="legenda-item"><span class="amostra-cor lantanideos"></span>Lantanídeos</div>
+                    <div class="legenda-item"><span class="amostra-cor actinideos"></span>Actinídeos</div>
+                    <div class="legenda-item"><span class="amostra-cor" style="background:#ffffff;border:2px solid #333;"></span>Hidrogênio</div>
+                </div>
+            </section>
+
+            <section class="legenda-box">
+                <h3>Estado físico</h3>
+                <div class="legenda-itens">
+                    <div class="legenda-item"><span class="estado-amostra estado-solido"></span>Sólido</div>
+                    <div class="legenda-item"><span class="estado-amostra estado-liquido"></span>Líquido</div>
+                    <div class="legenda-item"><span class="estado-amostra estado-gasoso"></span>Gasoso</div>
+                    <div class="legenda-item"><span class="estado-amostra estado-desconhecido"></span>Desconhecido</div>
+                </div>
+                <p style="font-size:10px;text-align:center;color:#666;margin:10px 0 0;">
+                    O estado físico também é apresentado nas informações de cada elemento.
+                </p>
+            </section>
+        </div>
+
+        <div class="faixa-series">
+            <div class="serie lan"><strong>* Lantanídeos:</strong> elementos 57 a 71</div>
+            <div class="serie act"><strong>** Actinídeos:</strong> elementos 89 a 103</div>
+        </div>
+
+        <div id="info-box">
+            <h2 id="nome-el" style="margin:0; color: #8e44ad;"></h2>
+            <p>Símbolo: <strong id="simbolo-el"></strong></p>
+            <p>Número Atômico: <span id="numero-el"></span></p>
+            <p>Massa Atômica: <span id="massa-el"></span> u</p>
+            <p>Família: <span id="familia-el"></span></p>
+            <div class="info-extra">
+                <p><strong>Grupo:</strong> <span id="grupo-el">—</span></p>
+                <p><strong>Período:</strong> <span id="periodo-el">—</span></p>
+                <p><strong>Estado físico:</strong> <span id="estado-el">—</span></p>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        /* =========================================================
+           MÓDULO DE INFORMAÇÕES COMPLEMENTARES
+           Mantém a função original e apenas acrescenta dados.
+           ========================================================= */
+
+        const dadosComplementares = {
+            // número atômico: {grupo, periodo, estado}
+            1:{grupo:"1",periodo:"1",estado:"Gasoso"},
+            2:{grupo:"18",periodo:"1",estado:"Gasoso"},
+            3:{grupo:"1",periodo:"2",estado:"Sólido"},
+            4:{grupo:"2",periodo:"2",estado:"Sólido"},
+            5:{grupo:"13",periodo:"2",estado:"Sólido"},
+            6:{grupo:"14",periodo:"2",estado:"Sólido"},
+            7:{grupo:"15",periodo:"2",estado:"Gasoso"},
+            8:{grupo:"16",periodo:"2",estado:"Gasoso"},
+            9:{grupo:"17",periodo:"2",estado:"Gasoso"},
+            10:{grupo:"18",periodo:"2",estado:"Gasoso"},
+            11:{grupo:"1",periodo:"3",estado:"Sólido"},
+            12:{grupo:"2",periodo:"3",estado:"Sólido"},
+            13:{grupo:"13",periodo:"3",estado:"Sólido"},
+            14:{grupo:"14",periodo:"3",estado:"Sólido"},
+            15:{grupo:"15",periodo:"3",estado:"Sólido"},
+            16:{grupo:"16",periodo:"3",estado:"Sólido"},
+            17:{grupo:"17",periodo:"3",estado:"Gasoso"},
+            18:{grupo:"18",periodo:"3",estado:"Gasoso"},
+            19:{grupo:"1",periodo:"4",estado:"Sólido"},
+            20:{grupo:"2",periodo:"4",estado:"Sólido"},
+            21:{grupo:"3",periodo:"4",estado:"Sólido"},
+            22:{grupo:"4",periodo:"4",estado:"Sólido"},
+            23:{grupo:"5",periodo:"4",estado:"Sólido"},
+            24:{grupo:"6",periodo:"4",estado:"Sólido"},
+            25:{grupo:"7",periodo:"4",estado:"Sólido"},
+            26:{grupo:"8",periodo:"4",estado:"Sólido"},
+            27:{grupo:"9",periodo:"4",estado:"Sólido"},
+            28:{grupo:"10",periodo:"4",estado:"Sólido"},
+            29:{grupo:"11",periodo:"4",estado:"Sólido"},
+            30:{grupo:"12",periodo:"4",estado:"Sólido"},
+            31:{grupo:"13",periodo:"4",estado:"Sólido"},
+            32:{grupo:"14",periodo:"4",estado:"Sólido"},
+            33:{grupo:"15",periodo:"4",estado:"Sólido"},
+            34:{grupo:"16",periodo:"4",estado:"Sólido"},
+            35:{grupo:"17",periodo:"4",estado:"Líquido"},
+            36:{grupo:"18",periodo:"4",estado:"Gasoso"},
+            37:{grupo:"1",periodo:"5",estado:"Sólido"},
+            38:{grupo:"2",periodo:"5",estado:"Sólido"},
+            39:{grupo:"3",periodo:"5",estado:"Sólido"},
+            40:{grupo:"4",periodo:"5",estado:"Sólido"},
+            41:{grupo:"5",periodo:"5",estado:"Sólido"},
+            42:{grupo:"6",periodo:"5",estado:"Sólido"},
+            43:{grupo:"7",periodo:"5",estado:"Sólido"},
+            44:{grupo:"8",periodo:"5",estado:"Sólido"},
+            45:{grupo:"9",periodo:"5",estado:"Sólido"},
+            46:{grupo:"10",periodo:"5",estado:"Sólido"},
+            47:{grupo:"11",periodo:"5",estado:"Sólido"},
+            48:{grupo:"12",periodo:"5",estado:"Sólido"},
+            49:{grupo:"13",periodo:"5",estado:"Sólido"},
+            50:{grupo:"14",periodo:"5",estado:"Sólido"},
+            51:{grupo:"15",periodo:"5",estado:"Sólido"},
+            52:{grupo:"16",periodo:"5",estado:"Sólido"},
+            53:{grupo:"17",periodo:"5",estado:"Sólido"},
+            54:{grupo:"18",periodo:"5",estado:"Gasoso"},
+            55:{grupo:"1",periodo:"6",estado:"Sólido"},
+            56:{grupo:"2",periodo:"6",estado:"Sólido"},
+            57:{grupo:"—",periodo:"6",estado:"Sólido"},
+            58:{grupo:"—",periodo:"6",estado:"Sólido"},
+            59:{grupo:"—",periodo:"6",estado:"Sólido"},
+            60:{grupo:"—",periodo:"6",estado:"Sólido"},
+            61:{grupo:"—",periodo:"6",estado:"Sólido"},
+            62:{grupo:"—",periodo:"6",estado:"Sólido"},
+            63:{grupo:"—",periodo:"6",estado:"Sólido"},
+            64:{grupo:"—",periodo:"6",estado:"Sólido"},
+            65:{grupo:"—",periodo:"6",estado:"Sólido"},
+            66:{grupo:"—",periodo:"6",estado:"Sólido"},
+            67:{grupo:"—",periodo:"6",estado:"Sólido"},
+            68:{grupo:"—",periodo:"6",estado:"Sólido"},
+            69:{grupo:"—",periodo:"6",estado:"Sólido"},
+            70:{grupo:"—",periodo:"6",estado:"Sólido"},
+            71:{grupo:"—",periodo:"6",estado:"Sólido"},
+            72:{grupo:"4",periodo:"6",estado:"Sólido"},
+            73:{grupo:"5",periodo:"6",estado:"Sólido"},
+            74:{grupo:"6",periodo:"6",estado:"Sólido"},
+            75:{grupo:"7",periodo:"6",estado:"Sólido"},
+            76:{grupo:"8",periodo:"6",estado:"Sólido"},
+            77:{grupo:"9",periodo:"6",estado:"Sólido"},
+            78:{grupo:"10",periodo:"6",estado:"Sólido"},
+            79:{grupo:"11",periodo:"6",estado:"Sólido"},
+            80:{grupo:"12",periodo:"6",estado:"Líquido"},
+            81:{grupo:"13",periodo:"6",estado:"Sólido"},
+            82:{grupo:"14",periodo:"6",estado:"Sólido"},
+            83:{grupo:"15",periodo:"6",estado:"Sólido"},
+            84:{grupo:"16",periodo:"6",estado:"Sólido"},
+            85:{grupo:"17",periodo:"6",estado:"Sólido"},
+            86:{grupo:"18",periodo:"6",estado:"Gasoso"},
+            87:{grupo:"1",periodo:"7",estado:"Sólido"},
+            88:{grupo:"2",periodo:"7",estado:"Sólido"},
+            89:{grupo:"—",periodo:"7",estado:"Sólido"},
+            90:{grupo:"—",periodo:"7",estado:"Sólido"},
+            91:{grupo:"—",periodo:"7",estado:"Sólido"},
+            92:{grupo:"—",periodo:"7",estado:"Sólido"},
+            93:{grupo:"—",periodo:"7",estado:"Sólido"},
+            94:{grupo:"—",periodo:"7",estado:"Sólido"},
+            95:{grupo:"—",periodo:"7",estado:"Sólido"},
+            96:{grupo:"—",periodo:"7",estado:"Sólido"},
+            97:{grupo:"—",periodo:"7",estado:"Sólido"},
+            98:{grupo:"—",periodo:"7",estado:"Sólido"},
+            99:{grupo:"—",periodo:"7",estado:"Sólido"},
+            100:{grupo:"—",periodo:"7",estado:"Sólido"},
+            101:{grupo:"—",periodo:"7",estado:"Sólido"},
+            102:{grupo:"—",periodo:"7",estado:"Sólido"},
+            103:{grupo:"—",periodo:"7",estado:"Sólido"},
+            104:{grupo:"4",periodo:"7",estado:"Desconhecido"},
+            105:{grupo:"5",periodo:"7",estado:"Desconhecido"},
+            106:{grupo:"6",periodo:"7",estado:"Desconhecido"},
+            107:{grupo:"7",periodo:"7",estado:"Desconhecido"},
+            108:{grupo:"8",periodo:"7",estado:"Desconhecido"},
+            109:{grupo:"9",periodo:"7",estado:"Desconhecido"},
+            110:{grupo:"10",periodo:"7",estado:"Desconhecido"},
+            111:{grupo:"11",periodo:"7",estado:"Desconhecido"},
+            112:{grupo:"12",periodo:"7",estado:"Desconhecido"},
+            113:{grupo:"13",periodo:"7",estado:"Desconhecido"},
+            114:{grupo:"14",periodo:"7",estado:"Desconhecido"},
+            115:{grupo:"15",periodo:"7",estado:"Desconhecido"},
+            116:{grupo:"16",periodo:"7",estado:"Desconhecido"},
+            117:{grupo:"17",periodo:"7",estado:"Desconhecido"},
+            118:{grupo:"18",periodo:"7",estado:"Desconhecido"}
+        };
+
+        function mostrarInfo(nome, simbolo, numero, massa, familia) {
+            document.getElementById('info-box').style.display = 'block';
+            document.getElementById('nome-el').innerText = nome;
+            document.getElementById('simbolo-el').innerText = simbolo;
+            document.getElementById('numero-el').innerText = numero;
+            document.getElementById('massa-el').innerText = massa;
+            document.getElementById('familia-el').innerText = familia;
+
+            const extra = dadosComplementares[String(numero)];
+            document.getElementById('grupo-el').innerText = extra ? extra.grupo : '—';
+            document.getElementById('periodo-el').innerText = extra ? extra.periodo : '—';
+            document.getElementById('estado-el').innerText = extra ? extra.estado : '—';
+        }
+    </script>
+</body>
+</html>
